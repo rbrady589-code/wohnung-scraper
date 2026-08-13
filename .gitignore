@@ -2,6 +2,7 @@
 node_modules/
 build/
 data/
+reference/
 npm-debug.log
 config.js
 docker-compose.override.yml

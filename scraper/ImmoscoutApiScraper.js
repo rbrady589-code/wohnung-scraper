@@ -93,17 +93,20 @@ module.exports = class ImmoscoutApiScraper extends AbstractScraper {
       result.data.heizkosten = expose.realEstate.serviceCharge;
       result.data.betriebskosten = 0; // expose.realEstate.serviceCharge; // ???
 
-      let warmmiete = result.data.warmmiete;
-      if (Number.isNaN(warmmiete)) {
-        warmmiete = result.data.kaltmiete;
-        if (!Number.isNaN(result.data.nebenkosten)) {
-          warmmiete += result.data.nebenkosten;
-        }
-        if (!Number.isNaN(result.data.heizkosten)) {
-          warmmiete += result.data.heizkosten;
-        }
-        if (!Number.isNaN(result.data.betriebskosten)) {
-          warmmiete += result.data.betriebskosten;
+      // A missing field comes back as undefined, not NaN, so the checks here
+      // have to test for both or the sum below never runs.
+      const amount = (x) =>
+        typeof x === "number" && !Number.isNaN(x) ? x : null;
+
+      let warmmiete = amount(result.data.warmmiete);
+      if (warmmiete === null) {
+        const kaltmiete = amount(result.data.kaltmiete);
+        if (kaltmiete !== null) {
+          warmmiete =
+            kaltmiete +
+            (amount(result.data.nebenkosten) || 0) +
+            (amount(result.data.heizkosten) || 0) +
+            (amount(result.data.betriebskosten) || 0);
         }
       }
 
